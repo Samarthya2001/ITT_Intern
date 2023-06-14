@@ -52,7 +52,7 @@ function handleClick(key){
             break;
 
         default:
-            console.log(key);
+            console.log("Press the correct key");
     }
 }
 

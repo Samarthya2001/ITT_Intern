@@ -1,43 +1,47 @@
-let weather = {
-    "key": "33146ad7953bfe7698ab78dd800b1d45",
-    fetchWeather: function(city){
-        fetch(
-            "https://api.openweathermap.org/data/2.5/weather?q="
-             + city + 
-             "&units=metric&appid="
-             + this.key
-        ).then((response) => response.json())
-        .then((data) => this.displayWeather(data))
-    },
-    displayWeather: function(data){
-        const {name} = data;
-        const descript = data.weather[0].description;
-        const descripticon = data.weather[0].icon;
-        const humid = data.main.humidity;
-        const windspeed = data.wind.speed;
-        const temp = data.main.temp; 
-        document.querySelector(".city").innerHTML ="Weather in " + name;
-        document.querySelector(".description").innerHTML = descript;
-        document.querySelector(".temp").innerHTML =temp + "°C";
-        document.querySelector(".humidity").innerHTML ="Humidty: " + humid + "%";
-        document.querySelector(".wind").innerHTML ="Wind Speed: " + windspeed + "Km/h";
-        document.querySelector(".icon").setAttribute("src", "https://openweathermap.org/img/wn/" + descripticon + "@2x.png");
-        document.querySelector(".weather").classList.remove("display");
-    },
-    search : function(){
-        this.fetchWeather(document.querySelector(".search-bar").value);
-    }
-    
-};
+const express = require("express");
+const bodyParser = require("body-parser");
+const date = require(__dirname + "/date.js");
 
-document.querySelector(".search button").addEventListener("click", function(){
-    weather.search();
+const app = express();
+
+var items = [];
+var workItems = [];
+
+app.set('view engine', "ejs");
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static("public"));
+
+app.get("/", function(req, res){
+    let day = date.getDate();
+
+    res.render("list", {listTitle: day, newListItems: items});
+
 });
 
-document.querySelector(".search-bar").addEventListener("keydown", function(event){
-    if(event.key == "Enter"){
-        weather.search();
+app.post("/", function (req, res){
+
+    let item = req.body.newItem;
+
+    if(req.body.list === "Work"){
+        workItems.push(item);
+        res.redirect("/work");
+
+    }else{
+        items.push(item);
+        res.redirect("/");    
     }
 });
 
-weather.fetchWeather("Ajmer");
+app.get("/work", function(req,res){
+    res.render("list", {listTitle: "Work list", newListItems: workItems});
+});
+
+app.get("/about", function(req,res){
+    res.render("about");
+})
+
+
+app.listen(3000, function(){
+    console.log("Successfully connected to port 3000!!!")
+});
